@@ -12,8 +12,6 @@ const Category = connection.define('Category', {
   FechaMod: { type: DataTypes.DATE, allowNull: false, defaultValue: new Date('1990-01-01T00:00:00Z') },
   UserBaja: { type: DataTypes.STRING(20), allowNull: false, defaultValue: '' },
   FechaBaja: { type: DataTypes.DATE, allowNull: false, defaultValue: new Date('1990-01-01T00:00:00Z') }
-}, {
-  tableName: 'categories'
-});
+}, { tableName: 'categories' });
 
 module.exports = { Category };

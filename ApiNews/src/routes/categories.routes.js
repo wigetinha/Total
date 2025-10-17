@@ -1,9 +1,14 @@
-const router = require('express').Router();
-const ctrl = require('../controllers/categories.controller');
+const express = require('express');
+const { get, getById, create, update, destroy } = require('../controllers/categories.controller');
+const { validatorCategoryCreate, validatorCategoryUpdate } = require('../validators/CategoryValidator');
+const { authenticateAdmin } = require('../middlewares/jwt');
 
-router.get('/', ctrl.list);
-router.post('/', ctrl.create);
-router.put('/:id', ctrl.update);
-router.delete('/:id', ctrl.remove);
+const api = express.Router();
 
-module.exports = router;
+api.get('/categorias', get);
+api.get('/categorias/:id', getById);
+api.post('/categorias', authenticateAdmin, validatorCategoryCreate, create);
+api.put('/categorias/:id', authenticateAdmin, validatorCategoryUpdate, update);
+api.delete('/categorias/:id', authenticateAdmin, destroy);
+
+module.exports = api;

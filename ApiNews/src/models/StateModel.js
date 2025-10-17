@@ -12,8 +12,6 @@ const State = connection.define('State', {
   FechaMod: { type: DataTypes.DATE, allowNull: false },
   UserBaja: { type: DataTypes.STRING(30), allowNull: false },
   FechaBaja: { type: DataTypes.DATE, allowNull: false }
-}, {
-  tableName: 'states'
-});
+}, { tableName: 'states' });
 
 module.exports = { State };

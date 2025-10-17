@@ -1,34 +1,21 @@
 const { Sequelize } = require('sequelize');
-const { DB_HOST, DB_NAME, DB_PASSWORD, DB_USER, DB_PORT } = require('./config');
+require('dotenv').config();
+const { DB_HOST, DB_PORT, DB_NAME, DB_PASSWORD, DB_USER } = require('./config');
 
 const connection = new Sequelize(DB_NAME, DB_USER, DB_PASSWORD, {
   host: DB_HOST,
   port: DB_PORT,
   dialect: 'mysql',
-  logging: false,
-  dialectOptions: {
-    // Convierte BIT(1) -> booleano real (evita Buffers):
-    typeCast: function (field, next) {
-      if (field.type === 'BIT' && field.length === 1) {
-        const bytes = field.buffer();
-        return bytes ? bytes[0] === 1 : 0;
-      }
-      return next();
-    },
-    charset: 'utf8mb4'
-  },
-  define: {
-    timestamps: true // usa createdAt/updatedAt como en tu SQL
-  }
+  logging: process.env.NODE_ENV === 'development' ? console.log : false,
 });
 
-async function testConnection() {
+(async () => {
   try {
     await connection.authenticate();
-    console.log('✅ Conexión a MySQL establecida.');
+    console.log('✅ Conexión a MySQL OK');
   } catch (err) {
-    console.error('❌ Error conectando a MySQL:', err.message);
+    console.error('❌ Error de conexión:', err);
   }
-}
+})();
 
-module.exports = { connection, testConnection };
+module.exports = { connection };

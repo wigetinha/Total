@@ -1,41 +1,48 @@
-const { Category } = require('../models');
+// src/controllers/categories.controller.js
+const { Category } = require('../models/CategoryModel');
+const { validationResult } = require('express-validator');
 
-async function list(req, res) {
-  const items = await Category.findAll({ order: [['id', 'ASC']] });
-  res.json(items);
-}
+const get = (req, res) => {
+  const { nombre, descripcion, activo, useralta } = req.query;
+  const where = {};
+  if (nombre) where.nombre = nombre;
+  if (descripcion) where.descripcion = descripcion;
+  if (typeof activo !== 'undefined') where.activo = activo;
+  if (useralta) where.UserAlta = useralta;
 
-async function create(req, res) {
-  const payload = req.body;
-  const now = new Date();
-  const item = await Category.create({
-    ...payload,
-    UserAlta: payload.UserAlta ?? 'Admin',
-    FechaAlta: payload.FechaAlta ?? now,
-    UserMod: payload.UserMod ?? '',
-    FechaMod: payload.FechaMod ?? new Date('1990-01-01T00:00:00Z'),
-    UserBaja: payload.UserBaja ?? '',
-    FechaBaja: payload.FechaBaja ?? new Date('1990-01-01T00:00:00Z')
-  });
-  res.status(201).json(item);
-}
+  Category.findAll({ where, order: [['id', 'ASC']] })
+    .then(rows => res.json(rows))
+    .catch(() => res.status(500).send('Error consultando categorías'));
+};
 
-async function update(req, res) {
-  const { id } = req.params;
-  const payload = req.body;
-  const item = await Category.findByPk(id);
-  if (!item) return res.status(404).json({ message: 'Not found' });
-  await item.update({ ...payload, FechaMod: new Date() });
-  res.json(item);
-}
+const getById = (req, res) => {
+  Category.findByPk(req.params.id)
+    .then(row => row ? res.json(row) : res.status(404).send('Recurso no encontrado'))
+    .catch(() => res.status(500).send('Error al consultar la categoría'));
+};
 
-async function remove(req, res) {
-  const { id } = req.params;
-  const item = await Category.findByPk(id);
-  if (!item) return res.status(404).json({ message: 'Not found' });
-  // Borrado lógico
-  await item.update({ activo: false, UserBaja: 'Admin', FechaBaja: new Date() });
-  res.json({ message: 'OK' });
-}
+const create = (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) return res.status(422).json({ errors: errors.mapped() });
 
-module.exports = { list, create, update, remove };
+  Category.create(req.body)
+    .then(newRow => res.status(201).json(newRow))
+    .catch(() => res.status(500).send('Error al crear categoría'));
+};
+
+const update = (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) return res.status(422).json({ errors: errors.mapped() });
+
+  Category.update(req.body, { where: { id: req.params.id } })
+    .then(([num]) => res.status(200).send(`${num} registro actualizado`))
+    .catch(() => res.status(500).send('Error al actualizar categoría'));
+};
+
+const destroy = (req, res) => {
+  Category.destroy({ where: { id: req.params.id } })
+    .then(num => res.status(200).send(`${num} registro eliminado`))
+    .catch(() => res.status(500).send('Error al eliminar categoría'));
+};
+
+module.exports = { get, getById, create, update, destroy };
